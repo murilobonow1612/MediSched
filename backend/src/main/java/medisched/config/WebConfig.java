@@ -14,7 +14,7 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")  // libera para todas as rotas
-                        .allowedOrigins("http://localhost:3000")  // origem do seu frontend React
+                        .allowedOrigins("http://localhost:5173")  // origem do seu frontend React
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowCredentials(true);
             }

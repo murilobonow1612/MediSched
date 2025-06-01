@@ -4,6 +4,7 @@ import Navbar from './Components/Navbar';
 import Login from './Components/Login';
 import Cadastro from './Components/Cadastro';
 import Home from './Components/Home';
+import Agendamento from './Components/Agendamento';
 
 function App() {
   const location = useLocation();
@@ -15,6 +16,7 @@ function App() {
         <Route path='/login' element={<Login />} />
         <Route path='/cadastro' element={<Cadastro />} />
         <Route path='/' element={<Home />} />
+        <Route path='/agendar-consulta' element={<Agendamento />} />
       </Routes>
     </>
   )
