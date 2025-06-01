@@ -37,6 +37,14 @@ public class ConsultaController {
 
     @PutMapping("/{id}")
     public Consulta atualizar(@PathVariable Long id, @RequestBody ConsultaDTO dto) {
+        if (dto.getMedicoId() == null) {
+            throw new RuntimeException("ID do médico não pode ser nulo.");
+        }
+
+        if (dto.getPacienteId() == null) {
+            throw new RuntimeException("ID do paciente não pode ser nulo.");
+        }
+
         Consulta consultaExistente = consultaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Consulta não encontrada com id: " + id));
 
@@ -54,6 +62,7 @@ public class ConsultaController {
 
         return consultaRepository.save(consultaExistente);
     }
+
 
 
     @PostMapping

@@ -8,7 +8,6 @@ const ListagemConsultas = () => {
   const [filtroMedico, setFiltroMedico] = useState('');
   const [filtroData, setFiltroData] = useState('');
 
-  // Função reutilizável para buscar consultas
   const fetchConsultas = async () => {
     try {
       const response = await axios.get('http://localhost:8080/consultas');
@@ -29,12 +28,41 @@ const ListagemConsultas = () => {
     try {
       await axios.delete(`http://localhost:8080/consultas/${id}`);
       alert('Consulta cancelada com sucesso!');
-      fetchConsultas(); // Atualiza a lista
+      fetchConsultas();
     } catch (error) {
       console.error('Erro ao cancelar consulta:', error);
       alert('Erro ao cancelar a consulta.');
     }
   };
+
+  const finalizarConsulta = async (id) => {
+  if (!window.confirm('Deseja marcar esta consulta como finalizada?')) return;
+
+  try {
+    // Busca a consulta atual
+    const consultaResponse = await axios.get(`http://localhost:8080/consultas/${id}`);
+    const c = consultaResponse.data;
+
+    const consultaAtualizada = {
+      dataHora: c.dataHora,
+      sintomas: c.sintomas,
+      status: "FINALIZADA",
+      pacienteId: c.paciente.id,
+      medicoId: c.medico.id
+    };
+
+    await axios.put(`http://localhost:8080/consultas/${id}`, consultaAtualizada);
+
+    alert('Consulta finalizada com sucesso!');
+    fetchConsultas();
+  } catch (error) {
+    console.error('Erro ao finalizar consulta:', error);
+    alert('Erro ao finalizar a consulta.');
+  }
+};
+
+
+
 
   const filtrarConsultas = (c) => {
     const dataConsulta = new Date(c.dataHora).toISOString().split('T')[0];
@@ -45,14 +73,12 @@ const ListagemConsultas = () => {
     );
   };
 
-  const hoje = new Date();
-
   const futuras = consultas.filter(
-    (c) => new Date(c.dataHora) >= hoje && filtrarConsultas(c)
+    (c) => c.status !== 'FINALIZADA' && filtrarConsultas(c)
   );
 
   const passadas = consultas.filter(
-    (c) => new Date(c.dataHora) < hoje && filtrarConsultas(c)
+    (c) => c.status === 'FINALIZADA' && filtrarConsultas(c)
   );
 
   return (
@@ -94,20 +120,20 @@ const ListagemConsultas = () => {
               <p><strong>Data e Hora:</strong> {new Date(c.dataHora).toLocaleString('pt-BR')}</p>
               <p><strong>Sintomas:</strong> {c.sintomas}</p>
               <p><strong>Status:</strong> {c.status}</p>
-              <button
-                className="cancelar-btn"
-                onClick={() => cancelarConsulta(c.id)}
-              >
+              <button className="cancelar-btn" onClick={() => cancelarConsulta(c.id)}>
                 Cancelar
+              </button>
+              <button className="finalizar-btn" onClick={() => finalizarConsulta(c.id)}>
+                Finalizar
               </button>
             </li>
           ))}
         </ul>
       )}
 
-      <h3>Consultas Passadas</h3>
+      <h3>Consultas Finalizadas</h3>
       {passadas.length === 0 ? (
-        <p className="empty-msg">Nenhuma consulta passada encontrada.</p>
+        <p className="empty-msg">Nenhuma consulta finalizada encontrada.</p>
       ) : (
         <ul className="lista-consultas">
           {passadas.map((c) => (
