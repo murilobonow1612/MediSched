@@ -40,6 +40,7 @@
 .submit-button {
   background-color: #0dff00;
   color: white;
+  font-weight: bold;
 }
 
 .submit-button:hover {

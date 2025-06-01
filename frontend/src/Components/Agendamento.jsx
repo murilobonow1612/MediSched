@@ -7,9 +7,10 @@ const Agendamento = () => {
   const [medico, setMedico] = useState('');
   const [horarios, setHorarios] = useState([]);
   const [horario, setHorario] = useState('');
+  const [data, setData] = useState(''); // NOVO: estado para a data
   const [sintomas, setSintomas] = useState('');
   const [consultaMarcada, setConsultaMarcada] = useState(false);
-  const [consultaId, setConsultaId] = useState(null); // <- Armazena o ID da consulta
+  const [consultaId, setConsultaId] = useState(null);
 
   useEffect(() => {
     const fetchMedicos = async () => {
@@ -36,7 +37,7 @@ const Agendamento = () => {
   };
 
   const agendarConsulta = async () => {
-    if (medico && horario && sintomas) {
+    if (medico && horario && sintomas && data) {
       const usuario = JSON.parse(localStorage.getItem('user'));
 
       if (!usuario || !usuario.id) {
@@ -46,24 +47,22 @@ const Agendamento = () => {
 
       try {
         const [horas, minutos] = horario.split(':');
-        const hoje = new Date();
-        const dataHora = new Date(
-          hoje.getFullYear(),
-          hoje.getMonth(),
-          hoje.getDate(),
-          parseInt(horas),
-          parseInt(minutos)
-        );
+        const [ano, mes, dia] = data.split('-');
+        const dataHora = new Date(ano, mes - 1, dia, horas, minutos);
+
+        // Corrigir o envio sem converter para UTC
+        const dataHoraLocal = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}T${horas.padStart(2, '0')}:${minutos.padStart(2, '0')}:00`;
+
 
         const response = await axios.post('http://localhost:8080/consultas', {
           medicoId: parseInt(medico),
           pacienteId: usuario.id,
-          dataHora: dataHora.toISOString(),
+          dataHora: dataHoraLocal,
           sintomas: sintomas,
           status: "AGENDADA"
         });
 
-        setConsultaId(response.data.id); // salvar o ID da consulta
+        setConsultaId(response.data.id);
         setConsultaMarcada(true);
         alert("Consulta agendada com sucesso!");
       } catch (error) {
@@ -94,6 +93,7 @@ const Agendamento = () => {
     setConsultaId(null);
     setMedico('');
     setHorario('');
+    setData('');
     setSintomas('');
   };
 
@@ -110,6 +110,14 @@ const Agendamento = () => {
             </option>
           ))}
         </select>
+
+        <input
+          type="date"
+          className="input"
+          value={data}
+          onChange={(e) => setData(e.target.value)}
+          required
+        />
 
         <select className="input" value={horario} onChange={(e) => setHorario(e.target.value)} required>
           <option value="">Escolha um horário</option>
@@ -131,7 +139,9 @@ const Agendamento = () => {
           <button className="submit-button" onClick={agendarConsulta}>Agendar</button>
         ) : (
           <>
-            <p className="success-msg">Consulta marcada com o médico às {horario}.</p>
+            <p className="success-msg">
+              Consulta marcada para {new Date(`${data}T${horario}`).toLocaleString('pt-BR')}
+            </p>
             <button className="cancel-button" onClick={cancelarConsulta}>Cancelar/Remarcar</button>
           </>
         )}
