@@ -2,7 +2,20 @@
   max-width: 900px;
   margin: 0 auto;
   padding: 20px;
+  
+  /* NOVO: altura limitada e rolagem interna */
+  max-height: calc(100vh - 60px); /* 100% da viewport menos altura da navbar */
+  overflow-y: auto;
+  box-sizing: border-box;
 }
+
+/* Adicione margem superior para "afastar" do topo, 
+   caso a navbar esteja fixa */
+body > .container-listagem {
+  margin-top: 60px; /* ajuste conforme a altura da navbar */
+}
+
+/* Mantém seus estilos atuais abaixo */
 
 .heading {
   text-align: center;

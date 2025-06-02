@@ -12,18 +12,24 @@ const Login = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post('http://localhost:8080/logar', credentials);
-      const userData = response.data;
-      console.log('Usuário logado:', userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      navigate('/Home');
-    } catch (error) {
-      console.error('Erro ao fazer login:', error);
-      alert('Erro ao fazer login. Verifique suas credenciais.');
+  e.preventDefault();
+  try {
+    const response = await axios.post('http://localhost:8080/logar', credentials);
+    const userData = response.data;
+    console.log('Usuário logado:', userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+
+    if (userData.especialidade) {
+      navigate('/listagem-consultas');
+    } else {
+      navigate('/');
     }
-  };
+  } catch (error) {
+    console.error('Erro ao fazer login:', error);
+    alert('Erro ao fazer login. Verifique suas credenciais.');
+  }
+};
+
 
   return (
     <div className="container-cadastro">

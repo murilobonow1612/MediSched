@@ -63,12 +63,20 @@ public class ConsultaController {
         return consultaRepository.save(consultaExistente);
     }
 
-
-
     @PostMapping
     public Consulta agendar(@RequestBody ConsultaDTO dto) {
-        Medico medico = medicoRepository.findById(dto.getMedicoId()).orElseThrow();
-        Paciente paciente = pacienteRepository.findById(dto.getPacienteId()).orElseThrow();
+        Medico medico = medicoRepository.findById(dto.getMedicoId())
+                .orElseThrow(() -> new RuntimeException("Médico não encontrado com id: " + dto.getMedicoId()));
+
+        Paciente paciente = pacienteRepository.findById(dto.getPacienteId())
+                .orElseThrow(() -> new RuntimeException("Paciente não encontrado com id: " + dto.getPacienteId()));
+
+        // Verifica se já existe consulta para o mesmo médico no mesmo horário
+        boolean conflito = consultaRepository.existsByMedicoIdAndDataHora(dto.getMedicoId(), dto.getDataHora());
+
+        if (conflito) {
+            throw new RuntimeException("Este horário já está reservado para o médico selecionado.");
+        }
 
         Consulta consulta = new Consulta();
         consulta.setDataHora(dto.getDataHora());
@@ -79,6 +87,7 @@ public class ConsultaController {
 
         return consultaRepository.save(consulta);
     }
+
 
     @DeleteMapping("/{id}")
     public void cancelar(@PathVariable Long id) {
