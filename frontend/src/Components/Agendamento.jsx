@@ -71,7 +71,6 @@ const Agendamento = () => {
         const [ano, mes, dia] = data.split('-');
         const dataHoraLocal = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}T${horas.padStart(2, '0')}:${minutos.padStart(2, '0')}:00`;
 
-        // Verifica se já existe consulta nesse horário para o médico
         const consultasExistentes = await axios.get('http://localhost:8080/consultas');
         const conflito = consultasExistentes.data.find((c) =>
           c.medico.id === parseInt(medico) &&
@@ -83,7 +82,6 @@ const Agendamento = () => {
           return;
         }
 
-        // Se não há conflito, agenda
         const response = await axios.post('http://localhost:8080/consultas', {
           medicoId: parseInt(medico),
           pacienteId: usuario.id,

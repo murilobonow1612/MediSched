@@ -80,14 +80,14 @@ public class ConsultaController {
             LocalDateTime dataHoraConsulta = consultaDTO.getDataHora();
 
 
-            // ✅ Validação: impedir agendamento em data/hora passada
+            //impedir agendamento em data/hora passada
             if (dataHoraConsulta.isBefore(LocalDateTime.now())) {
                 return ResponseEntity
                         .badRequest()
                         .body("A data e hora da consulta não podem estar no passado.");
             }
 
-            // ✅ Verifica se já existe uma consulta com o mesmo médico e horário
+            //Verifica se já existe uma consulta com o mesmo médico e horário
             Optional<Consulta> conflito = consultaRepository.findByMedicoIdAndDataHora(
                     consultaDTO.getMedicoId(), dataHoraConsulta
             );
