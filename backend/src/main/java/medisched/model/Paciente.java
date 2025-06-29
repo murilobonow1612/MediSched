@@ -1,27 +1,15 @@
 package medisched.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
 import lombok.Data;
 
 import java.time.LocalDate;
 
 @Entity
 @Data
-public class Paciente {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String nome;
+public class Paciente extends Pessoa {
 
     private String cpf;
-
     private LocalDate nascimento;
-
     private String telefone;
-
-    private String email;
-
-    private String senha;
 }

@@ -2,6 +2,7 @@ package medisched.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import medisched.enums.StatusConsulta;
 
 import java.time.LocalDateTime;
 
@@ -26,6 +27,7 @@ public class Consulta {
     @JoinColumn(name = "paciente_id", nullable = false)
     private Paciente paciente;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private StatusConsulta status;
 }
 

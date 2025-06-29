@@ -21,18 +21,27 @@ const Cadastro = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const url = isMedico ? 'http://localhost:8080/medicos' : 'http://localhost:8080/pacientes';
-      const data = isMedico
-        ? {
+  e.preventDefault();
+
+  const senha = form.senha;
+  const senhaValida = senha.length >= 8 && /[^A-Za-z0-9]/.test(senha); // verifica caractere especial
+
+  if (!senhaValida) {
+    alert('A senha deve ter no mínimo 8 caracteres e conter pelo menos 1 caractere especial.');
+    return;
+  }
+
+  try {
+    const url = isMedico ? 'http://localhost:8080/medicos' : 'http://localhost:8080/pacientes';
+    const data = isMedico
+      ? {
           nome: form.nome,
           especialidade: form.especialidade,
           horarios: form.horarios,
           email: form.email,
           senha: form.senha
         }
-        : {
+      : {
           nome: form.nome,
           cpf: form.cpf,
           nascimento: form.nascimento,
@@ -40,14 +49,16 @@ const Cadastro = () => {
           email: form.email,
           senha: form.senha
         };
-      await axios.post(url, data);
-      alert('Cadastro realizado com sucesso!');
-      setForm({ nome: '', cpf: '', nascimento: '', telefone: '', email: '', senha: '', especialidade: '', horarios: '' });
-    } catch (error) {
-      console.error('Erro no cadastro:', error);
-      alert('Erro ao cadastrar: ' + (error.response ? error.response.data : 'Tente novamente mais tarde.'));
-    }
-  };
+
+    await axios.post(url, data);
+    alert('Cadastro realizado com sucesso!');
+    setForm({ nome: '', cpf: '', nascimento: '', telefone: '', email: '', senha: '', especialidade: '', horarios: '' });
+  } catch (error) {
+    console.error('Erro no cadastro:', error);
+    alert('Erro ao cadastrar: ' + (error.response ? error.response.data : 'Tente novamente mais tarde.'));
+  }
+};
+
 
   return (
     <div className="container-cadastro">

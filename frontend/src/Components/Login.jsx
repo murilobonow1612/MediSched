@@ -17,9 +17,11 @@ const Login = () => {
     const response = await axios.post('http://localhost:8080/logar', credentials);
     const userData = response.data;
     console.log('Usuário logado:', userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+    const tipo = userData.especialidade ? 'MEDICO' : 'PACIENTE';
+    localStorage.setItem('user', JSON.stringify({ ...userData, tipo }));
 
-    if (userData.especialidade) {
+
+    if (tipo === "MEDICO") {
       navigate('/listagem-consultas');
     } else {
       navigate('/');

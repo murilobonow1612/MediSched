@@ -8,6 +8,10 @@ const ListagemConsultas = () => {
   const [filtroMedico, setFiltroMedico] = useState('');
   const [filtroData, setFiltroData] = useState('');
 
+  const usuario = JSON.parse(localStorage.getItem('user'));
+  const tipoUsuario = usuario?.tipo; // 'MEDICO' ou 'PACIENTE'
+  const idUsuario = usuario?.id;
+
   const fetchConsultas = async () => {
     try {
       const response = await axios.get('http://localhost:8080/consultas');
@@ -74,12 +78,33 @@ const ListagemConsultas = () => {
   };
 
   const futuras = consultas.filter(
-    (c) => c.status !== 'FINALIZADA' && filtrarConsultas(c)
-  );
+  (c) =>
+    c.status !== 'FINALIZADA' &&
+    filtrarConsultas(c) &&
+    (tipoUsuario !== 'PACIENTE' || c.paciente?.id === idUsuario)
+);
 
-  const passadas = consultas.filter(
-    (c) => c.status === 'FINALIZADA' && filtrarConsultas(c)
-  );
+const passadas = consultas.filter(
+  (c) =>
+    c.status === 'FINALIZADA' &&
+    filtrarConsultas(c) &&
+    (tipoUsuario !== 'PACIENTE' || c.paciente?.id === idUsuario)
+);
+
+const futuras_m = consultas.filter(
+  (c) =>
+    c.status !== 'FINALIZADA' &&
+    filtrarConsultas(c) &&
+    (tipoUsuario !== 'MEDICO' || c.medico?.id === idUsuario)
+);
+
+const passadas_m = consultas.filter(
+  (c) =>
+    c.status === 'FINALIZADA' &&
+    filtrarConsultas(c) &&
+    (tipoUsuario !== 'MEDICO' || c.medico?.id === idUsuario)
+);
+
 
   return (
     <div className="container-listagem">
@@ -109,11 +134,11 @@ const ListagemConsultas = () => {
       </div>
 
       <h3>Consultas Futuras</h3>
-      {futuras.length === 0 ? (
+      {(tipoUsuario === "PACIENTE" ? futuras : futuras_m).length === 0 ? (
         <p className="empty-msg">Nenhuma consulta futura encontrada.</p>
       ) : (
         <ul className="lista-consultas">
-          {futuras.map((c) => (
+          {(tipoUsuario === "PACIENTE" ? futuras : futuras_m).map((c) => (
             <li key={c.id} className="consulta-card">
               <p><strong>Paciente:</strong> {c.paciente?.nome}</p>
               <p><strong>Médico:</strong> {c.medico?.nome}</p>
@@ -123,20 +148,23 @@ const ListagemConsultas = () => {
               <button className="cancelar-btn" onClick={() => cancelarConsulta(c.id)}>
                 Cancelar
               </button>
-              <button className="finalizar-btn" onClick={() => finalizarConsulta(c.id)}>
-                Finalizar
-              </button>
+              {tipoUsuario === 'MEDICO' && (
+                <button className="finalizar-btn" onClick={() => finalizarConsulta(c.id)}>
+                  Finalizar
+                </button>
+)}
+
             </li>
           ))}
         </ul>
       )}
 
       <h3>Consultas Finalizadas</h3>
-      {passadas.length === 0 ? (
+      {(tipoUsuario === "PACIENTE" ? passadas : passadas_m).length === 0 ? (
         <p className="empty-msg">Nenhuma consulta finalizada encontrada.</p>
       ) : (
         <ul className="lista-consultas">
-          {passadas.map((c) => (
+          {(tipoUsuario === "PACIENTE" ? passadas : passadas_m).map((c) => (
             <li key={c.id} className="consulta-card">
               <p><strong>Paciente:</strong> {c.paciente?.nome}</p>
               <p><strong>Médico:</strong> {c.medico?.nome}</p>

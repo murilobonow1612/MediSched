@@ -11,6 +11,7 @@ const Agendamento = () => {
   const [sintomas, setSintomas] = useState('');
   const [consultaMarcada, setConsultaMarcada] = useState(false);
   const [consultaId, setConsultaId] = useState(null);
+  const [horariosOcupados, setHorariosOcupados] = useState([]);
 
   useEffect(() => {
     const fetchMedicos = async () => {
@@ -25,6 +26,15 @@ const Agendamento = () => {
     fetchMedicos();
   }, []);
 
+  useEffect(() => {
+    if (medico && data) {
+      buscarHorariosOcupados(medico, data);
+    } else {
+      setHorariosOcupados([]); // limpa caso médico ou data estejam vazios
+    }
+  }, [medico, data]);
+
+
   const handleMedicoChange = (e) => {
     const selectedId = e.target.value;
     const selectedMedico = medicos.find((m) => m.id.toString() === selectedId);
@@ -36,24 +46,44 @@ const Agendamento = () => {
     setHorario('');
   };
 
+
+
   const agendarConsulta = async () => {
     if (medico && horario && sintomas && data) {
       const usuario = JSON.parse(localStorage.getItem('user'));
-
       if (!usuario || !usuario.id) {
         alert("Usuário não está logado.");
         return;
       }
 
+      // Verifica se a data é anterior a hoje
+      const hoje = new Date();
+      const dataSelecionada = new Date(`${data}T${horario}:00`);
+
+      if (dataSelecionada < hoje) {
+        alert("Não é possível agendar uma consulta em uma data ou horário passados.");
+        return;
+}
+
+
       try {
         const [horas, minutos] = horario.split(':');
         const [ano, mes, dia] = data.split('-');
-        const dataHora = new Date(ano, mes - 1, dia, horas, minutos);
-
-        // Corrigir o envio sem converter para UTC
         const dataHoraLocal = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}T${horas.padStart(2, '0')}:${minutos.padStart(2, '0')}:00`;
 
+        // Verifica se já existe consulta nesse horário para o médico
+        const consultasExistentes = await axios.get('http://localhost:8080/consultas');
+        const conflito = consultasExistentes.data.find((c) =>
+          c.medico.id === parseInt(medico) &&
+          c.dataHora.startsWith(dataHoraLocal)
+        );
 
+        if (conflito) {
+          alert("Este horário já está reservado para o médico selecionado.");
+          return;
+        }
+
+        // Se não há conflito, agenda
         const response = await axios.post('http://localhost:8080/consultas', {
           medicoId: parseInt(medico),
           pacienteId: usuario.id,
@@ -73,6 +103,7 @@ const Agendamento = () => {
       alert('Preencha todos os campos.');
     }
   };
+
 
   const cancelarConsulta = async () => {
     if (!consultaId) {
@@ -97,6 +128,28 @@ const Agendamento = () => {
     setSintomas('');
   };
 
+  const buscarHorariosOcupados = async (medicoId, dataSelecionada) => {
+    try {
+      const response = await axios.get('http://localhost:8080/consultas');
+      const ocupados = response.data.filter(c =>
+        c.medico.id === parseInt(medicoId) &&
+        c.dataHora.startsWith(dataSelecionada)
+      ).map(c => {
+        const hora = new Date(c.dataHora).toLocaleTimeString('pt-BR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        return hora;
+      });
+
+      setHorariosOcupados(ocupados);
+    } catch (error) {
+      console.error("Erro ao buscar horários ocupados:", error);
+      alert("Erro ao buscar horários ocupados.");
+    }
+  };
+
+
   return (
     <div className="container-agendamento">
       <h2 className="heading">Agendamento de Consulta</h2>
@@ -119,12 +172,31 @@ const Agendamento = () => {
           required
         />
 
-        <select className="input" value={horario} onChange={(e) => setHorario(e.target.value)} required>
+        <select
+          className="input"
+          value={horario}
+          onChange={(e) => setHorario(e.target.value)}
+          required
+        >
           <option value="">Escolha um horário</option>
-          {horarios.map((h, i) => (
-            <option key={i} value={h}>{h}</option>
-          ))}
+          {horarios.map((h, i) => {
+            const isOcupado = horariosOcupados.includes(h);
+            return (
+              <option
+                key={i}
+                value={h}
+                style={{
+                  color: isOcupado ? 'red' : 'white',
+                  fontWeight: isOcupado ? 'bold' : 'normal',
+                }}
+                disabled={isOcupado}
+              >
+                {h} {isOcupado ? ' (ocupado)' : ''}
+              </option>
+            );
+          })}
         </select>
+
 
         <textarea
           className="input"
@@ -142,7 +214,7 @@ const Agendamento = () => {
             <p className="success-msg">
               Consulta marcada para {new Date(`${data}T${horario}`).toLocaleString('pt-BR')}
             </p>
-            <button className="cancel-button" onClick={cancelarConsulta}>Cancelar/Remarcar</button>
+            <button className="cancel-button" onClick={cancelarConsulta}>Cancelar</button>
           </>
         )}
       </form>
