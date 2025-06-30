@@ -111,26 +111,11 @@ const passadas_m = consultas.filter(
       <h2 className="heading">Consultas Agendadas</h2>
 
       <div className="filtros">
-        <input
-          type="text"
-          className="input"
-          placeholder="Filtrar por paciente"
-          value={filtroPaciente}
-          onChange={(e) => setFiltroPaciente(e.target.value)}
-        />
-        <input
-          type="text"
-          className="input"
-          placeholder="Filtrar por médico"
-          value={filtroMedico}
-          onChange={(e) => setFiltroMedico(e.target.value)}
-        />
-        <input
-          type="date"
-          className="input"
-          value={filtroData}
-          onChange={(e) => setFiltroData(e.target.value)}
-        />
+        {tipoUsuario === 'MEDICO' && (<input type="text"className="input" placeholder="Filtrar por paciente" value={filtroPaciente} onChange={(e) => setFiltroPaciente(e.target.value)}/>)}
+
+        {tipoUsuario === 'PACIENTE' && (<input type="text" className="input" placeholder="Filtrar por médico" value={filtroMedico} onChange={(e) => setFiltroMedico(e.target.value)}/>)}
+
+        <input type="date" className="input" value={filtroData} onChange={(e) => setFiltroData(e.target.value)} />
       </div>
 
       <h3>Consultas Futuras</h3>
