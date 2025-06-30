@@ -43,8 +43,8 @@ const Home = () => {
         <div className="container_ie">
           <div className="section_ie1">
             <h2>📞 Suporte</h2>
-            <p>Email: suporte@medisched.com</p>
-            <p>Telefone: (11) 4002-8922</p>
+            <p>Email: murilobonow07@gmail.com</p>
+            <p>Telefone: (48) 99225-4888</p>
           </div>
 
           <div className="section_ie2">
